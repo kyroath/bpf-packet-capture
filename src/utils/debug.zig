@@ -1,18 +1,38 @@
 const std = @import("std");
 
-pub fn print_hex_dump(buffer: []u8) void {
-    for (buffer[0..buffer.len], 0..) |byte, idx| {
-        std.debug.print("{x:0>2}", .{byte});
-        if ((idx + 1) % 16 == 0) {
-            std.debug.print("\n", .{});
-        } else {
-            std.debug.print(" ", .{});
-        }
-    }
-    std.debug.print("\n", .{});
+pub fn print_hex_dump(buffer: []const u8) void {
+    print_hex(buffer, 16, " ", true);
 }
 
-pub fn printTimestamp(micros: u64) !void {
+pub fn print_hex(buffer: []const u8, line_len: usize, separator: []const u8, newline: bool) void {
+    for (buffer[0..buffer.len], 0..) |byte, idx| {
+        std.debug.print("{x:0>2}", .{byte});
+        if (line_len != 0 and (idx + 1) % line_len == 0) {
+            std.debug.print("\n", .{});
+        } else if (idx + 1 != buffer.len) {
+            std.debug.print("{s}", .{separator});
+        }
+    }
+    if (newline) {
+        std.debug.print("\n", .{});
+    }
+}
+
+pub fn print_decimal(buffer: []const u8, line_len: usize, separator: []const u8, newline: bool) void {
+    for (buffer[0..buffer.len], 0..) |byte, idx| {
+        std.debug.print("{d}", .{byte});
+        if (line_len != 0 and (idx + 1) % line_len == 0) {
+            std.debug.print("\n", .{});
+        } else if (idx + 1 != buffer.len) {
+            std.debug.print("{s}", .{separator});
+        }
+    }
+    if (newline) {
+        std.debug.print("\n", .{});
+    }
+}
+
+pub fn print_timestamp(micros: u64) !void {
     // Convert microseconds to seconds
     const seconds: u64 = @divFloor(micros, 1_000_000);
     const remaining_micros = micros % 1_000_000;

@@ -72,4 +72,9 @@ pub const Filter = struct {
         posix.close(self.fd);
         allocator.free(self.buffer);
     }
+
+    pub fn read(self: Filter) ![]const u8 {
+        const bytes_read = try posix.read(self.fd, self.buffer);
+        return self.buffer[0..bytes_read];
+    }
 };

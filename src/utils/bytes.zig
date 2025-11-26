@@ -3,6 +3,11 @@ pub fn pack_u8_to_u16(buffer: []const u8) u16 {
         (@as(u16, buffer[1]) << 8);
 }
 
+pub fn pack_u8_to_u16_big(buffer: []const u8) u16 {
+    return (@as(u16, buffer[0]) << 8) |
+        @as(u16, buffer[1]);
+}
+
 pub fn pack_u8_to_u32(buffer: []const u8) u32 {
     return @as(u32, buffer[0]) |
         (@as(u32, buffer[1]) << 8) |
