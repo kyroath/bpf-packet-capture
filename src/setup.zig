@@ -2,8 +2,10 @@ const std = @import("std");
 const posix = std.posix;
 const c = std.c;
 
+// needed as default ioctl uses c_int which cannot fit the opcode
 extern "c" fn ioctl(fd: c_int, request: c_ulong, ...) c_int;
 
+// https://man.freebsd.org/cgi/man.cgi?query=bpf
 const BIOCSETIF = 0x8020426c;
 const BIOCGBLEN = 0x40044266;
 const BIOCIMMEDIATE = 0x80044270;
@@ -17,6 +19,7 @@ fn open_bpf() !posix.fd_t {
     var i: u8 = 0;
     while (i < 99) : (i += 1) {
         var path_buf: [16]u8 = undefined;
+        // try until we find an unused device
         const path = try std.fmt.bufPrint(&path_buf, "/dev/bpf{d}", .{i});
         const fd = posix.open(path, .{ .ACCMODE = .RDWR }, 0);
         return fd;
@@ -33,6 +36,8 @@ fn bind_interface(fd: posix.fd_t, name: []const u8) !void {
     }
 }
 
+// setting immediate mode as we don't need to wait till buffer fills,
+// parsing each packet one-by-one is fine.
 fn set_immediate(fd: posix.fd_t) !void {
     var immediate: u32 = 1;
     if (ioctl(fd, BIOCIMMEDIATE, &immediate) != 0) {

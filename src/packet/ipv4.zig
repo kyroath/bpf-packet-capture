@@ -1,17 +1,6 @@
 const std = @import("std");
 const ubytes = @import("../utils/bytes.zig");
 
-pub const Proto = enum(u8) {
-    ICMP = 0x0001,
-    TCP = 0x0006,
-    UDP = 0x0011,
-    UNKNOWN = 0x0000,
-};
-
-fn proto_from_int(value: u16) Proto {
-    return std.meta.intToEnum(Proto, value) catch Proto.UNKNOWN;
-}
-
 pub const IPV4 = struct {
     version: u4,
     ihl: u4,
@@ -25,6 +14,17 @@ pub const IPV4 = struct {
     src_addr: []const u8,
     dst_addr: []const u8,
     payload: []const u8,
+
+    pub const Proto = enum(u8) {
+        ICMP = 0x0001,
+        TCP = 0x0006,
+        UDP = 0x0011,
+        UNKNOWN = 0x0000,
+    };
+
+    fn proto_from_int(value: u16) Proto {
+        return std.meta.intToEnum(Proto, value) catch Proto.UNKNOWN;
+    }
 
     pub fn init(buf: []const u8) IPV4 {
         const version: u4 = @truncate(buf[0] >> 4);

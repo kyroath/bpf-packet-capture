@@ -5,24 +5,21 @@ const Filter = @import("setup.zig").Filter;
 const BPF = @import("packet/bpf.zig").BPF;
 
 const Ethernet = @import("packet/ethernet.zig").Ethernet;
-const EtherType = @import("packet/ethernet.zig").EtherType;
-
 const IPV4 = @import("packet/ipv4.zig").IPV4;
-const Proto = @import("packet/ipv4.zig").Proto;
-
 const ICMP = @import("packet/icmp.zig").ICMP;
-const ICMP_Type = @import("packet/icmp.zig").ICMP_Type;
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
+    // change the interface from `en0` to something appropriate.
     var filter = try Filter.init("en0", allocator);
     defer filter.deinit(allocator);
 
     std.debug.print("BPF ready on fd={d}, buffer={d} bytes\n", .{ filter.fd, filter.buf_len });
 
+    // read 5 packets and quit, for testing.
     var i: i32 = 1;
     while (i <= 5) : (i += 1) {
         const buffer = try filter.read();
@@ -45,10 +42,6 @@ pub fn main() !void {
         udebug.print_hex(eth.dst_mac, 0, ":", true);
         std.debug.print("\n", .{});
 
-        if (eth.ether_type != EtherType.IPV4) {
-            continue;
-        }
-
         const ip = IPV4.init(eth.payload);
         std.debug.print("Version {x:0>2}, IHL {x:0>2}\n", .{ ip.version, ip.ihl });
         std.debug.print("Length {d} bytes, TTL {d}\n", .{ ip.length, ip.ttl });
@@ -57,10 +50,6 @@ pub fn main() !void {
         std.debug.print(" -> ", .{});
         udebug.print_decimal(ip.dst_addr, 0, ".", true);
         std.debug.print("\n", .{});
-
-        if (ip.proto != Proto.ICMP) {
-            continue;
-        }
 
         const icmp = ICMP.init(ip.payload);
         std.debug.print("Type {s}, code {d}\n", .{ @tagName(icmp.icmp_type), icmp.code });

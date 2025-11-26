@@ -1,16 +1,6 @@
 const std = @import("std");
 const ubytes = @import("../utils/bytes.zig");
 
-pub const ICMP_Type = enum(u8) {
-    ECHO_REPLY = 0x00,
-    ECHO_REQUEST = 0x08,
-    UNKNOWN = 0xFF,
-};
-
-fn icmp_type_from_int(value: u16) ICMP_Type {
-    return std.meta.intToEnum(ICMP_Type, value) catch ICMP_Type.UNKNOWN;
-}
-
 pub const ICMP = struct {
     icmp_type: ICMP_Type,
     code: u8,
@@ -22,6 +12,16 @@ pub const ICMP = struct {
         usec: u32,
         joined: u64,
     },
+
+    pub const ICMP_Type = enum(u8) {
+        ECHO_REPLY = 0x00,
+        ECHO_REQUEST = 0x08,
+        UNKNOWN = 0xFF,
+    };
+
+    fn icmp_type_from_int(value: u16) ICMP_Type {
+        return std.meta.intToEnum(ICMP_Type, value) catch ICMP_Type.UNKNOWN;
+    }
 
     pub fn init(buf: []const u8) ICMP {
         const icmp_type = buf[0];

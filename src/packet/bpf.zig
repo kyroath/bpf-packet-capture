@@ -12,6 +12,9 @@ pub const BPF = struct {
     packet: []const u8,
 
     pub fn init(buffer: []const u8) BPF {
+        // something interesting, as the timestamp is little endian
+        // but the networking packets are big endian. do check when parsing,
+        // quite easy to get meaningless values if not careful.
         const sec = ubytes.pack_u8_to_u32(buffer[0..]);
         const usec = ubytes.pack_u8_to_u32(buffer[4..]);
         const joined: u64 = @as(u64, sec) * 1000000 + usec;
